@@ -1,4 +1,3 @@
-
 """
     bundlapp - C64OS Bundle Application Tool
     ========================================
@@ -41,12 +40,12 @@
 
 """
 
-import pathlib
-import os
-import logging
-import sys
-import subprocess
 import configparser
+import logging
+import os
+import pathlib
+import subprocess
+import sys
 import tempfile
 
 print(__file__)
@@ -69,11 +68,16 @@ config_filename = os.path.join(HOME_PATH, "bundleapp.ini")
 logging.info("checking for configuration file %s", config_filename)
 
 if not os.path.exists(config_filename):
-    config_filename = os.path.join(pathlib.Path(os.path.dirname(os.path.realpath(__file__))).absolute(), "bundleapp.ini")
+    config_filename = os.path.join(
+        pathlib.Path(os.path.dirname(os.path.realpath(__file__))).absolute(),
+        "bundleapp.ini",
+    )
     logging.info("checking for configuration file %s", config_filename)
 
     if not os.path.exists(config_filename):
-        logging.error("configuration file not found -- consult README.md and try again.")
+        logging.error(
+            "configuration file not found -- consult README.md and try again."
+        )
         sys.exit(1)
 
 logging.info("opening configuration file %s", config_filename)
@@ -110,7 +114,9 @@ bundle_filename = os.path.join(pathlib.Path(os.getcwd()).absolute(), "bundle.ini
 logging.debug("trying to find %s", bundle_filename)
 
 if not os.path.exists(bundle_filename):
-    logging.error("the bundle.ini file was not found -- consult README.md and try again.")
+    logging.error(
+        "the bundle.ini file was not found -- consult README.md and try again."
+    )
     sys.exit(1)
 
 logging.info("opening bundle configuration file %s", bundle_filename)
@@ -159,12 +165,12 @@ logging.debug("final_car_name = %s", final_car_name)
 for section in bundle.sections():
     logging.debug(section)
 
-for file in bundle.options('build'):
+for file in bundle.options("build"):
 
     logging.debug("building file %s", file)
-    file_src = bundle.get('build', file).strip()
-    logging.debug("file source : %s", file_src )
-    subprocess.run([TMPX_PATH, file_src, "-o", file], shell=True, check=False)
+    file_src = bundle.get("build", file).strip()
+    logging.debug("file source : %s", file_src)
+    result = subprocess.run([TMPX_PATH, file_src, "-o", file], shell=False, check=True)
 
 #
 # create the disk
@@ -172,15 +178,14 @@ for file in bundle.options('build'):
 if BUILD_DISK > 0:
     create_disk_title = "%s,a1" % APP_NAME
     create_disk_name = "%s" % final_disk_name
-    subprocess.run([C1541_PATH, "-format", 
-        create_disk_title, 
-        DISK_TYPE, 
-        create_disk_name], 
-        shell=True, 
-        check=False)
+    subprocess.run(
+        [C1541_PATH, "-format", create_disk_title, DISK_TYPE, create_disk_name],
+        shell=False,
+        check=False,
+    )
 
 
-CAR_DATA = b''
+CAR_DATA = b""
 
 if BUILD_CAR > 0:
 
@@ -198,7 +203,7 @@ if BUILD_CAR > 0:
         .text "123456789012345678901234567890"
         .byte 0
         """
-    
+
     print(HEADER_STR)
 
     header_filename = os.path.join(TEMP_PATH.name, "header.a")
@@ -207,7 +212,9 @@ if BUILD_CAR > 0:
     header_src.write(HEADER_STR)
     header_src.seek(0)
     header_src.close()
-    subprocess.run([TMPX_PATH, header_filename, "-o", header_outfile], shell=True, check=False)
+    subprocess.run(
+        [TMPX_PATH, header_filename, "-o", header_outfile], shell=False, check=False
+    )
     header = open(header_outfile, "rb", encoding=None)
     data = header.read()
     header.close()
@@ -216,7 +223,7 @@ if BUILD_CAR > 0:
 
     # create the dir
 
-    file_count = len(bundle['files'])
+    file_count = len(bundle["files"])
     name_len = len(APP_NAME)
     name_fill = "$a0," * (16 - name_len)
 
@@ -228,7 +235,7 @@ if BUILD_CAR > 0:
         .byte {name_fill[:-1]}
         .byte 0
         """
-    
+
     print(DIR_STR)
 
     dir_filename = os.path.join(TEMP_PATH.name, "dir.a")
@@ -237,7 +244,9 @@ if BUILD_CAR > 0:
     dir_src.write(DIR_STR)
     dir_src.seek(0)
     dir_src.close()
-    subprocess.run([TMPX_PATH, dir_filename, "-o", dir_outfile], shell=True, check=False)
+    subprocess.run(
+        [TMPX_PATH, dir_filename, "-o", dir_outfile], shell=False, check=False
+    )
     header = open(dir_outfile, "rb", encoding=None)
     data = header.read()
     header.close()
@@ -248,12 +257,16 @@ if BUILD_CAR > 0:
 #
 # make sure the bundle file is valid
 #
-if 'bundle' not in bundle.sections():
-    logging.error("your bundle must have a BUNDLE section -- see the README for more help and try again")
+if "bundle" not in bundle.sections():
+    logging.error(
+        "your bundle must have a BUNDLE section -- see the README for more help and try again"
+    )
     sys.exit(1)
 
-if 'files' not in bundle.sections():
-    logging.error("your bundle must have a FILES section -- see the README for more help and try again")
+if "files" not in bundle.sections():
+    logging.error(
+        "your bundle must have a FILES section -- see the README for more help and try again"
+    )
     sys.exit(1)
 
 #
@@ -261,18 +274,18 @@ if 'files' not in bundle.sections():
 #
 
 
-for file in bundle.options('files'):
+for file in bundle.options("files"):
 
     logging.debug("working on file %s", file)
-    
-    file_props = bundle.get('files', file).strip()
-    
+
+    file_props = bundle.get("files", file).strip()
+
     logging.debug("the properties for this file are %s", file_props)
-    
+
     list_props = []
     if len(file_props.strip()) > 0:
         list_props = file_props.split(",")
-    
+
     logging.debug("the properties have been converted to a list %s", list_props)
 
     logging.debug("the list has %s items", len(list_props))
@@ -292,7 +305,7 @@ for file in bundle.options('files'):
         prop_index = curr_index
         prop_val = prop
 
-        if (prop.find("=") > 0):
+        if prop.find("=") > 0:
             logging.debug("this is a formal setting %s", prop)
             prop_vals = prop.split("=")
             prop_val = prop_vals[1]
@@ -321,7 +334,7 @@ for file in bundle.options('files'):
 
         if prop_index == 2:
             file_to = prop_val
-        
+
         curr_index += 1
 
     logging.debug("file type:   %s", file_type)
@@ -338,24 +351,28 @@ for file in bundle.options('files'):
     if file_type == "seq":
 
         # create temp file that removes the crlf with just lf
-        CRLF = b'\r\n'
-        LF = b'\n'
+        CRLF = b"\r\n"
+        LF = b"\n"
 
-        with open(file_from, 'rb') as open_file:
+        with open(file_from, "rb") as open_file:
             content = open_file.read()
 
         content = content.replace(CRLF, LF)
 
         logging.debug(content)
 
-        new_from_file = tempfile.TemporaryFile(delete=False)
+        new_from_file = tempfile.NamedTemporaryFile(delete=False)
 
-        logging.debug('converting crlf to lf in file %s', new_from_file.name)
+        logging.info("converting crlf to lf in file %s", new_from_file.name)
 
-        with open(new_from_file.name, 'wb') as open_file:
+        with open(new_from_file.name, "wb") as open_file:
             open_file.write(content)
 
-        subprocess.run([PETCAT_PATH, "-text", "-w2", "-o", file_to, "--", new_from_file.name], shell=True, check=False)
+        subprocess.run(
+            [PETCAT_PATH, "-text", "-w2", "-o", file_to, "--", new_from_file.name],
+            shell=False,
+            check=False,
+        )
 
         final_file_from = file_to
         final_file_to = f"{file_to},s"
@@ -368,7 +385,18 @@ for file in bundle.options('files'):
     logging.debug("final_file_to = %s", final_file_to)
 
     if BUILD_DISK > 0:
-        subprocess.run([C1541_PATH, "-attach", create_disk_name, "-write", final_file_from, final_file_to], shell=True, check=False)
+        subprocess.run(
+            [
+                C1541_PATH,
+                "-attach",
+                create_disk_name,
+                "-write",
+                final_file_from,
+                final_file_to,
+            ],
+            shell=False,
+            check=False,
+        )
 
     if BUILD_CAR > 0:
 
@@ -395,7 +423,7 @@ for file in bundle.options('files'):
             .byte {name_fill[:-1]}
             .byte 0
             """
-        
+
         print(FILE_STR)
 
         file_filename = os.path.join(TEMP_PATH.name, "file.a")
@@ -404,7 +432,9 @@ for file in bundle.options('files'):
         file_src.write(FILE_STR)
         file_src.seek(0)
         file_src.close()
-        subprocess.run([TMPX_PATH, file_filename, "-o", file_outfilename], shell=True, check=False)
+        subprocess.run(
+            [TMPX_PATH, file_filename, "-o", file_outfilename], shell=False, check=False
+        )
         file_outfile = open(file_outfilename, "rb", encoding=None)
         file_data = file_outfile.read()
         file_outfile.close()
