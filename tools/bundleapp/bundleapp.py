@@ -363,7 +363,7 @@ for file in bundle.options("files"):
 
         new_from_file = tempfile.NamedTemporaryFile(delete=False)
 
-        logging.info("converting crlf to lf in file %s", new_from_file.name)
+        logging.debug("converting crlf to lf in file %s", new_from_file.name)
 
         with open(new_from_file.name, "wb") as open_file:
             open_file.write(content)
